@@ -3,17 +3,16 @@ from datetime import datetime
 from collections import namedtuple
 from functools import partial
 
-# get csv file path
+# Get csv file path
 data_folder = Path.cwd().parent
 file_name = str(data_folder) + '/' + 'nyc_parking_tickets_extract.csv'
 
-# read csv file and get the first line of the csv for column_name
-with open(file_name) as f:
-    column_headers = next(f).strip('\n').split(',')
 
-# read list of column_headers and create a new list of cleaned up column_names
-column_names = [header.replace(' ', '_').lower() for header in column_headers]
-Ticket = namedtuple('Ticket', column_names)
+# Read csv file and get the first line of the csv for column_name
+def column_headers():
+    with open(file_name) as f:
+        column_headers = next(f).strip('\n').split(',')
+        return column_headers
 
 
 # Read the data in the file, we have to skip the first row in the file.
@@ -57,6 +56,11 @@ def parse_string(value, *, default=None):
         return default
 
 
+# Read list of column_headers and create a new list of cleaned up column_names
+column_names = [header.replace(' ', '_').lower() for header in column_headers()]
+Ticket = namedtuple('Ticket', column_names)
+
+
 # To make life easier, I'm going to create a tuple that contains the functions that should be called to clean up each field.
 # The tuple positions will correspond to the fields in the data row.
 # I'm also going to specify what the default value should be when there is a problem parsing the fields.
@@ -93,8 +97,16 @@ def parse_row(row, *, default=None):
         return default
 
 
-rows = read_data()
+# Let's create an iterator to easily iterate over the cleaned up and structured data in the file, skipping None rows
+def parsed_data():
+    for row in read_data():
+        parsed = parse_row(row)
+        if parsed:
+            yield parsed
+
+
+#  Test it out by iterating a few times
+parsed_rows = parsed_data()
 for _ in range(5):
-    row = next(rows)
-    parsed_data = parse_row(row)
-    print(parsed_data)
+    print(next(parsed_rows))
+
