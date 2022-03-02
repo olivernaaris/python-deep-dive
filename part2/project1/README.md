@@ -1,4 +1,4 @@
-Project
+# Project 1
 In this project you are asked to create a sequence type that will return a series of (regular convex) Polygon objects.
 
 Each polygon will be uniquely be defined by:
