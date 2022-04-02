@@ -30,12 +30,13 @@ should support fully-featured slicing and indexing (positive indices, negative i
 should support the length() function
 should provide the polygon with the highest area:perimeter ratio
 You will need to do a little bit of math for this project. The necessary formulas are included in the video.
-Goal 1
+
+## Goal 1
 Create a Polygon class with the properties defined above. The initializer for the class will need the number of vertices (or edges, same), and the circumradius (R).
 
 Make sure you test all your methods and properties. (This is called unit testing)
 
-Goal 2
+## Goal 2
 Create a finite sequence type that is a sequence of Polygons start with 3 vertices, up to, and including some maximum value m which will need to be passed to the initializer of the sequence type.
 
 The value for the circumradius R, will also need to be provided to the initializer.
