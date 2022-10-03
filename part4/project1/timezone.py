@@ -1,3 +1,4 @@
+import itertools
 import numbers
 from datetime import timedelta
 
@@ -8,7 +9,7 @@ class TimeZone:
             raise ValueError('Timezone name cannot be empty.')
 
         self._name = str(name).strip()
-
+        # technically we should check that offset is a
         if not isinstance(offset_hours, numbers.Integral):
             raise ValueError('Hour offset must be an integer.')
 
@@ -50,12 +51,49 @@ class TimeZone:
                 f"offset_minutes={self._offset_minutes})")
 
 
-tz1 = TimeZone('ABC', -2, -15)
-print(tz1.name)
+class Account:
+    transaction_counter = itertools.count(100)
 
-from datetime import datetime
+    def __init__(self, account_number, first_name, last_name):
+        # in practice we probably would want to add checks to make sure these values are valid / non-empty
+        self._account_number = account_number
+        self.first_name = first_name
+        self.last_name = last_name
 
-dt = datetime.utcnow()
-print(dt)
+    @property
+    def account_number(self):
+        return self._account_number
 
-print(dt + tz1.offset)
+    @property
+    def first_name(self):
+        return self._first_name
+
+    @first_name.setter
+    def first_name(self, value):
+        self.validate_and_set_name('_first_name', value, 'First Name')
+
+    @property
+    def last_name(self):
+        return self._last_name
+
+    @last_name.setter
+    def last_name(self, value):
+        self.validate_and_set_name('_last_name', value, 'Last Name')
+
+    # also going to create a full_name computed property, for ease of use
+    @property
+    def full_name(self):
+        return f'{self.first_name} {self.last_name}'
+
+    def validate_and_set_name(self, property_name, value, field_title):
+        if value is None or len(str(value).strip()) == 0:
+            raise ValueError(f'{field_title} cannot be empty.')
+        setattr(self, property_name, value)
+
+try:
+    a = Account('12345', 'John', '')
+except ValueError as ex:
+    print(ex)
+
+a = Account('12345', 'Alex', 'Martelli')
+print(a.first_name, a.last_name, a.full_name)
