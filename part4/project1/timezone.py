@@ -135,6 +135,16 @@ class Account:
             raise ValueError(f'{field_title} cannot be empty.')
         setattr(self, property_name, value)
 
+    @staticmethod
+    def validate_real_number(value, min_value=None):
+        if not isinstance(value, numbers.Real):
+            raise ValueError('Value must be a real number,')
+
+        if min_value is not None and value < min_value:
+            raise ValueError(f'Value must be at least {min_value}.')
+
+        return value
+
     def generate_confirmation_code(self, transaction_code):
         # main difficulty here is to generate the current time in UTC using this formatting:
         # YYYYMMDDHHMMSS
@@ -170,6 +180,38 @@ class Account:
 
         return Confirmation(account_number, transaction_code, transaction_id, dt_utc.isoformat(), dt_preferred_str)
 
+    def deposit(self, value):
+        value = Account.validate_real_number(value, 0.01)
+        transaction_code = Account._transaction_codes['deposit']
+        conf_code = self.generate_confirmation_code(transaction_code)
+        self._balance += value
+        return conf_code
+
+    def withdraw(self, value):
+        value = Account.validate_real_number(value, 0.01)
+        accepted = False
+        if self.balance - value < 0:
+            # insufficient funds
+            transaction_code = Account._transaction_codes['rejected']
+        else:
+            accepted = True
+            transaction_code = Account._transaction_codes['withdraw']
+
+        conf_code = self.generate_confirmation_code(transaction_code)
+
+        # Doing this here in case there's a problem generating a confirmation code
+        # - do not want to modify the balance if we cannot generate a transaction code successfully
+        if accepted:
+            self._balance -= value
+
+        return conf_code
+
+    def pay_interest(self):
+        interest = self.balance * Account.get_interest_rate() / 100
+        conf_code = self.generate_confirmation_code(Account._transaction_codes['interest'])
+        self._balance += interest
+        return conf_code
+
     def make_transaction(self):
         return self.generate_confirmation_code('dummy')
 
@@ -195,3 +237,10 @@ try:
     Account.parse_confirmation_code('X-A100-asdasd-123')
 except ValueError as ex:
     print(ex)
+
+asd = Account('A100', 'Eric', 'Idle', TimeZone('MST', -7, 0), 100.0)
+print(asd.balance)
+print(asd.deposit(100))
+print(asd.balance)
+print(asd.withdraw(1000))
+print(a.balance)
